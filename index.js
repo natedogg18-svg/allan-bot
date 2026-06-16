@@ -118,12 +118,23 @@ function joinAndListen(channel) {
 
   log(`Joining #${channel.name} in ${guild.name}`);
 
+  // Seed timers immediately when joining — don't wait for Ready state
+  const afkChannelNow = getAfkChannel(guild);
+  for (const vc of guild.channels.cache.values()) {
+    if (!vc.isVoiceBased() || vc.id === afkChannelNow?.id) continue;
+    for (const [, member] of vc.members) {
+      if (member.user.bot) continue;
+      lastSpokeAt[guild.id][member.id] = Date.now() - ALONE_TIMEOUT_MS;
+    }
+  }
+
   const connection = joinVoiceChannel({
     channelId: channel.id,
     guildId: guild.id,
     adapterCreator: guild.voiceAdapterCreator,
     selfDeaf: false,
     selfMute: true,
+    debug: true,
   });
 
   connection.on(VoiceConnectionStatus.Connecting, () => log(`Voice: Connecting in ${guild.name}`));

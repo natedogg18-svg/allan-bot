@@ -125,7 +125,6 @@ function joinAndListen(channel) {
     for (const [, member] of vc.members) {
       if (member.user.bot) continue;
       lastSpokeAt[guild.id][member.id] = Date.now() - ALONE_TIMEOUT_MS;
-      log(`Seeded timer for ${member.user.tag}`);
     }
   }
 
@@ -264,7 +263,6 @@ client.on("voiceStateUpdate", (oldState, newState) => {
 
 // ─── AFK Check Loop ───────────────────────────────────────────────────────────
 async function checkAfkUsers() {
-  log(`Running AFK check...`);
   for (const guild of client.guilds.cache.values()) {
     const afkChannel = getAfkChannel(guild);
     if (!afkChannel) { log(`No AFK channel found in ${guild.name} — skipping`); continue; }
@@ -274,6 +272,8 @@ async function checkAfkUsers() {
     for (const channel of guild.channels.cache.values()) {
       if (!channel.isVoiceBased() || channel.id === afkChannel.id) continue;
 
+      let anyoneActive = false;
+
       for (const [memberId, member] of channel.members) {
         if (member.user.bot) continue;
         if (member.voice.streaming || member.voice.selfVideo) continue;
@@ -282,13 +282,23 @@ async function checkAfkUsers() {
         if (!last) continue;
 
         const idle = Date.now() - last;
-        log(`Checking ${member.user.tag}: idle ${Math.round(idle/60000)}m, threshold ${config.afkTimeoutMinutes}m, streaming=${member.voice.streaming}, video=${member.voice.selfVideo}`);
+
+        // If someone has been active recently (spoke after Allan joined), they're back
+        if (idle < ALONE_TIMEOUT_MS) {
+          anyoneActive = true;
+          continue;
+        }
+
         if (idle < AFK_TIMEOUT_MS) continue;
 
         try {
           await member.voice.setChannel(afkChannel);
           log(`Moved ${member.user.tag} to AFK (silent ${Math.round(idle / 60000)}m)`);
           unsubscribeFromUser(guild.id, memberId);
+
+          // Leave after moving someone to AFK
+          const conn = getVoiceConnection(guild.id);
+          if (conn) { conn.destroy(); log(`Left voice in ${guild.name} after moving ${member.user.tag} to AFK`); }
 
           try {
             await member.send({
@@ -301,6 +311,13 @@ async function checkAfkUsers() {
         } catch (err) {
           log(`Couldn't move ${member.user.tag}: ${err.message}`);
         }
+      }
+
+      // If someone became active again after Allan joined, leave
+      if (anyoneActive && getVoiceConnection(guild.id)) {
+        const conn = getVoiceConnection(guild.id);
+        if (conn) { conn.destroy(); log(`Left voice in ${guild.name} — someone is active again`); }
+        lastSpokeAt[guild.id] = {};
       }
     }
   }

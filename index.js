@@ -264,6 +264,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
 
 // ─── AFK Check Loop ───────────────────────────────────────────────────────────
 async function checkAfkUsers() {
+  log(`Running AFK check...`);
   for (const guild of client.guilds.cache.values()) {
     const afkChannel = getAfkChannel(guild);
     if (!afkChannel) continue;

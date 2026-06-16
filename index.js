@@ -125,6 +125,7 @@ function joinAndListen(channel) {
     for (const [, member] of vc.members) {
       if (member.user.bot) continue;
       lastSpokeAt[guild.id][member.id] = Date.now() - ALONE_TIMEOUT_MS;
+      log(`Seeded timer for ${member.user.tag}`);
     }
   }
 

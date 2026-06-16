@@ -1,4 +1,5 @@
 if (process.env.NODE_ENV !== 'production') require("dotenv").config();
+console.log("TOKEN CHECK:", process.env.DISCORD_TOKEN ? "found" : "missing");
 const {
   Client,
   GatewayIntentBits,

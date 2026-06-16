@@ -125,6 +125,8 @@ function joinAndListen(channel) {
     selfMute: true,
   });
 
+  connection.on(VoiceConnectionStatus.Connecting, () => log(`Voice: Connecting in ${guild.name}`));
+  connection.on(VoiceConnectionStatus.Signalling, () => log(`Voice: Signalling in ${guild.name}`));
   connection.on(VoiceConnectionStatus.Ready, () => {
     log(`Voice connection Ready in ${guild.name} — seeding timers`);
     const receiver = connection.receiver;

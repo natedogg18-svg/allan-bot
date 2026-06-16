@@ -267,7 +267,7 @@ async function checkAfkUsers() {
   log(`Running AFK check...`);
   for (const guild of client.guilds.cache.values()) {
     const afkChannel = getAfkChannel(guild);
-    if (!afkChannel) continue;
+    if (!afkChannel) { log(`No AFK channel found in ${guild.name} — skipping`); continue; }
 
     initGuild(guild.id);
 
@@ -276,7 +276,6 @@ async function checkAfkUsers() {
 
       for (const [memberId, member] of channel.members) {
         if (member.user.bot) continue;
-        if (member.permissions.has(PermissionsBitField.Flags.Administrator)) continue;
         if (member.voice.streaming || member.voice.selfVideo) continue;
 
         const last = lastSpokeAt[guild.id][memberId];

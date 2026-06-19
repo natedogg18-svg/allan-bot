@@ -12,7 +12,8 @@
     "@discordjs/voice": "^0.19.2",
     "discord.js": "^14.15.3",
     "dotenv": "^17.4.2",
-    "libsodium-wrappers": "^0.7.13"
+    "libsodium-wrappers": "^0.7.13",
+    "mediaplex": "^1.0.0"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",

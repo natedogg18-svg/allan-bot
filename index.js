@@ -100,9 +100,11 @@ function cancelAloneTimer(channel) {
 // No audio decoding needed, works without opus/opusscript.
 function attachSpeakingListener(guildId, receiver) {
   receiver.speaking.on("start", (userId) => {
+    const tag = client.users.cache.get(userId)?.username ?? userId;
+    log(`🎤 ${tag} is speaking — timer reset`);
     markActive(guildId, userId);
   });
-  log(`Speaking listener attached for guild ${guildId}`);
+  log(`👂 Listening for voice activity in guild ${guildId}`);
 }
 
 function unsubscribeFromUser(guildId, userId) {
@@ -134,7 +136,6 @@ function joinAndListen(channel) {
     adapterCreator: guild.voiceAdapterCreator,
     selfDeaf: false,
     selfMute: true,
-    debug: true,
   });
 
   connection.on(VoiceConnectionStatus.Connecting, () => log(`Voice: Connecting in ${guild.name}`));
@@ -293,7 +294,7 @@ async function checkAfkUsers() {
 
         try {
           await member.voice.setChannel(afkChannel);
-          log(`Moved ${member.user.tag} to AFK (silent ${Math.round(idle / 60000)}m)`);
+          log(`💤 Moved ${member.user.tag} to AFK (silent ${Math.round(idle / 60000)}m)`);
           unsubscribeFromUser(guild.id, memberId);
 
           // Leave after moving someone to AFK

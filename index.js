@@ -277,6 +277,10 @@ async function checkAfkUsers() {
     for (const channel of guild.channels.cache.values()) {
       if (!channel.isVoiceBased() || channel.id === afkChannel.id) continue;
 
+      // Only move people if they are alone (1 non-bot in the channel)
+      const nonBots = channel.members.filter(m => !m.user.bot);
+      if (nonBots.size !== 1) continue;
+
       let anyoneActive = false;
 
       for (const [memberId, member] of channel.members) {

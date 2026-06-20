@@ -35,7 +35,10 @@ const client = new Client({
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function log(msg) { console.log(`💖 [Allan] ${msg}`); }
+function log(msg) {
+  const mdt = new Date().toLocaleString("en-US", { timeZone: "America/Denver", hour12: true, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  console.log(`💖 [Allan] [${mdt} MDT] ${msg}`);
+}
 
 function getAfkChannel(guild) {
   if (guild.afkChannelId) return guild.channels.cache.get(guild.afkChannelId);
@@ -72,7 +75,8 @@ function startAloneTimer(channel) {
   // Don't start if already have a timer for this channel
   if (aloneTimers[guild.id][channel.id]) return;
 
-  log(`${channel.name}: someone is alone, starting ${config.aloneTimeoutMinutes}m timer`);
+  const aloneUser = channel.members.find(m => !m.user.bot)?.user.tag ?? "unknown";
+  log(`${channel.name}: ${aloneUser} is alone, starting ${config.aloneTimeoutMinutes}m timer`);
 
   aloneTimers[guild.id][channel.id] = setTimeout(() => {
     delete aloneTimers[guild.id][channel.id];

@@ -107,6 +107,10 @@ function attachSpeakingListener(guildId, receiver) {
     const tag = client.users.cache.get(userId)?.username ?? userId;
     log(`🎤 ${tag} is speaking — timer reset`);
     markActive(guildId, userId);
+    // Subscribe to this user's audio to keep speaking events flowing
+    if (!receiver.subscriptions.has(userId)) {
+      receiver.subscribe(userId);
+    }
   });
   log(`👂 Listening for voice activity in guild ${guildId}`);
 }
@@ -140,6 +144,7 @@ function joinAndListen(channel) {
     adapterCreator: guild.voiceAdapterCreator,
     selfDeaf: false,
     selfMute: false,
+
   });
 
   connection.on(VoiceConnectionStatus.Connecting, () => log(`Voice: Connecting in ${guild.name}`));
@@ -157,6 +162,15 @@ function joinAndListen(channel) {
         if (member.user.bot) continue;
         initGuild(guild.id);
         lastSpokeAt[guild.id][member.id] = Date.now() - ALONE_TIMEOUT_MS;
+      }
+    }
+
+    // Subscribe to all current users so speaking events fire immediately
+    for (const vc of guild.channels.cache.values()) {
+      if (!vc.isVoiceBased() || vc.id === afkChannel?.id) continue;
+      for (const [, member] of vc.members) {
+        if (member.user.bot) continue;
+        receiver.subscribe(member.id);
       }
     }
 

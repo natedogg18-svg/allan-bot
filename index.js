@@ -139,7 +139,7 @@ function joinAndListen(channel) {
     guildId: guild.id,
     adapterCreator: guild.voiceAdapterCreator,
     selfDeaf: false,
-    selfMute: true,
+    selfMute: false,
   });
 
   connection.on(VoiceConnectionStatus.Connecting, () => log(`Voice: Connecting in ${guild.name}`));
